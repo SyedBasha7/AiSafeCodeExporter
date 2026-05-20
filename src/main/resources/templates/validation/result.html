@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Validation')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<main class="container page-shell py-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h3 mb-0">Validation</h1>
+        <a class="btn btn-outline-secondary" th:href="@{/profiles/{id}/edit(id=${profile.id})}">Back to profile</a>
+    </div>
+    <div class="summary-card p-3 mb-3">
+        <h2 class="h5" th:text="${profile.name}">Profile</h2>
+        <p class="mb-0" th:classappend="${validation.valid()} ? 'text-success' : 'text-danger'"
+           th:text="${validation.valid()} ? 'Configuration is valid.' : 'Configuration has errors.'">Status</p>
+    </div>
+    <div class="summary-card p-3" th:if="${!validation.valid()}">
+        <h2 class="h5">Errors</h2>
+        <ul class="mb-0">
+            <li th:each="error : ${validation.errors()}" th:text="${error}">Error</li>
+        </ul>
+    </div>
+</main>
+</body>
+</html>

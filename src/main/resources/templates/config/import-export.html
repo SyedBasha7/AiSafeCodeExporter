@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Import Export')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<main class="container page-shell py-4">
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+    <h1 class="h3 mb-3">Import and Export Profiles</h1>
+    <div class="alert alert-warning">
+        Profile YAML can contain sensitive replacement search values. Keep exported profile files private.
+    </div>
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="summary-card p-3 h-100">
+                <h2 class="h5">Export</h2>
+                <table class="table table-sm">
+                    <thead><tr><th>Name</th><th>Type</th><th></th></tr></thead>
+                    <tbody>
+                    <tr th:each="profile : ${profiles}">
+                        <td th:text="${profile.name}">Profile</td>
+                        <td th:text="${profile.profileType}">AI_SAFE_EXPORT</td>
+                        <td class="text-end"><a class="btn btn-sm btn-outline-primary" th:href="@{/profiles/{id}/export.yml(id=${profile.id})}">Download YAML</a></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(profiles)}"><td colspan="3" class="text-secondary">No profiles yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="summary-card p-3 h-100">
+                <h2 class="h5">Import</h2>
+                <div class="alert alert-danger" th:if="${errors}">
+                    <div th:each="error : ${errors}" th:text="${error}">Error</div>
+                </div>
+                <form method="post" th:action="@{/config/import}" th:object="${importProfileForm}">
+                    <label class="form-label" for="yaml">YAML</label>
+                    <textarea class="form-control code-textarea mb-3" id="yaml" rows="18" th:field="*{yaml}"></textarea>
+                    <button class="btn btn-primary" type="submit">Import profile</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

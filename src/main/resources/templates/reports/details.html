@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Report Details')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<main class="container page-shell py-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h3 mb-0">Private Browser Report</h1>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-primary" th:href="@{/reports/{id}/export.json(id=${report.runId()})}">AI-safe JSON</a>
+            <a class="btn btn-outline-primary" th:href="@{/reports/{id}/export.csv(id=${report.runId()})}">AI-safe CSV</a>
+            <a class="btn btn-outline-secondary" th:href="@{/runs}">History</a>
+        </div>
+    </div>
+    <div class="alert alert-warning">
+        This private report may contain local absolute paths. Exported JSON/CSV reports replace roots and redact sensitive values.
+    </div>
+    <div class="summary-card p-3 mb-3">
+        <dl class="row mb-0">
+            <dt class="col-sm-2">Run id</dt><dd class="col-sm-10" th:text="${report.runId()}">1</dd>
+            <dt class="col-sm-2">Profile</dt><dd class="col-sm-10" th:text="${report.profileName()}">Profile</dd>
+            <dt class="col-sm-2">Mode</dt><dd class="col-sm-10" th:text="${report.dryRun() ? 'Dry-run' : 'Execution'}">Dry-run</dd>
+            <dt class="col-sm-2">Status</dt><dd class="col-sm-10" th:text="${report.status()}">SUCCESS</dd>
+            <dt class="col-sm-2">Started</dt><dd class="col-sm-10" th:text="${report.startedAt()}">start</dd>
+            <dt class="col-sm-2">Ended</dt><dd class="col-sm-10" th:text="${report.endedAt()}">end</dd>
+            <dt class="col-sm-2">Duration</dt><dd class="col-sm-10" th:text="${report.durationMillis() + ' ms'}">0 ms</dd>
+            <dt class="col-sm-2">Source</dt><dd class="col-sm-10 path-cell" th:text="${report.sourceRoot()}">source</dd>
+            <dt class="col-sm-2">Target</dt><dd class="col-sm-10 path-cell" th:text="${report.targetRoot()}">target</dd>
+            <dt class="col-sm-2">Config hash</dt><dd class="col-sm-10 code-textarea" th:text="${report.configHash()}">hash</dd>
+        </dl>
+    </div>
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <div class="summary-card p-3 h-100">
+                <h2 class="h6">Operation Counts</h2>
+                <div th:each="entry : ${report.operationCounts().entrySet()}">
+                    <span th:text="${entry.key}">CREATE_FILE</span>
+                    <span class="badge text-bg-secondary" th:text="${entry.value}">0</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="summary-card p-3 h-100">
+                <h2 class="h6">Status Counts</h2>
+                <div th:each="entry : ${report.statusCounts().entrySet()}">
+                    <span th:text="${entry.key}">SUCCESS</span>
+                    <span class="badge text-bg-secondary" th:text="${entry.value}">0</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="summary-card p-3 h-100">
+                <h2 class="h6">Leak Findings</h2>
+                <div class="display-6" th:text="${report.leakCount()}">0</div>
+            </div>
+        </div>
+    </div>
+    <div class="table-responsive summary-card">
+        <table class="table table-sm table-hover table-fixed mb-0">
+            <thead>
+            <tr>
+                <th>Source relative</th>
+                <th>Target relative</th>
+                <th>Operation</th>
+                <th>Status</th>
+                <th>Replacement counts</th>
+                <th>Rule ids</th>
+                <th>Leaks</th>
+                <th>Error</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="entry : ${report.entries()}">
+                <td class="path-cell" th:text="${entry.sourceRelativePath()}">src</td>
+                <td class="path-cell" th:text="${entry.targetRelativePath()}">target</td>
+                <td th:text="${entry.operationType()}">CREATE_FILE</td>
+                <td th:text="${entry.operationStatus()}">PLANNED</td>
+                <td class="path-cell">
+                    <div>Path: <span th:text="${entry.pathReplacementCounts()}">{}</span></div>
+                    <div>Content: <span th:text="${entry.contentReplacementCounts()}">{}</span></div>
+                </td>
+                <td class="path-cell" th:text="${entry.ruleIds()}">[]</td>
+                <td class="path-cell">
+                    <div th:each="finding : ${entry.leakFindings()}" th:text="${finding.message() + ' (' + finding.occurrenceCount() + ')'}">finding</div>
+                </td>
+                <td class="path-cell" th:text="${entry.errorMessage()}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(report.entries())}"><td colspan="8" class="text-secondary">No report entries.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

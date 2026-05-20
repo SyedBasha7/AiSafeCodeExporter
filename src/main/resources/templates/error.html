@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Error')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<main class="container page-shell py-4">
+    <div class="alert alert-danger">
+        <strong>Request failed.</strong>
+        <span th:text="${errorMessage}">Unexpected error</span>
+    </div>
+    <a class="btn btn-outline-primary" th:href="@{/}">Dashboard</a>
+</main>
+</body>
+</html>

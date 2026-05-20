@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Confirm Execution')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<main class="container page-shell py-4">
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h3 mb-0">Actual Execution Confirmation</h1>
+        <a class="btn btn-outline-secondary" th:href="@{/profiles/{id}/edit(id=${profile.id})}">Back</a>
+    </div>
+    <div class="alert alert-danger">
+        Actual execution writes files to the target folder. Never paste private report content containing real values into AI tools.
+    </div>
+    <div class="summary-card p-3 mb-3">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Profile</dt><dd class="col-sm-9" th:text="${profile.name}">Profile</dd>
+            <dt class="col-sm-3">Source</dt><dd class="col-sm-9 path-cell" th:text="${profile.sourcePath}">Source</dd>
+            <dt class="col-sm-3">Target</dt><dd class="col-sm-9 path-cell" th:text="${profile.targetPath}">Target</dd>
+            <dt class="col-sm-3">Config hash</dt><dd class="col-sm-9 code-textarea" th:text="${configHash}">hash</dd>
+        </dl>
+    </div>
+    <div class="alert alert-warning" th:if="${!#lists.isEmpty(blocks)}">
+        <div th:each="block : ${blocks}" th:text="${block}">Blocked</div>
+    </div>
+    <form method="post" th:action="@{/profiles/{id}/execute(id=${profile.id})}">
+        <button class="btn btn-danger" type="submit" th:disabled="${!#lists.isEmpty(blocks)}">Run actual execution</button>
+    </form>
+</main>
+</body>
+</html>

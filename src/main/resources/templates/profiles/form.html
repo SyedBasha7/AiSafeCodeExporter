@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${profileId == null ? 'New profile' : 'Edit profile'})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<main class="container page-shell py-4">
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h3 mb-0" th:text="${profileId == null ? 'New profile' : 'Edit profile'}">Profile</h1>
+        <a class="btn btn-outline-secondary" th:href="@{/profiles}">Back</a>
+    </div>
+    <div class="alert alert-warning">
+        AI-safe export profiles require a successful dry-run for the exact current configuration before execution.
+    </div>
+    <form method="post" th:object="${profileForm}" th:action="${profileId == null ? '/profiles' : '/profiles/' + profileId}">
+        <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+            <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">Validation error</div>
+        </div>
+        <div class="summary-card p-3 mb-3">
+            <h2 class="h5">Profile</h2>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="name">Name</label>
+                    <input class="form-control" id="name" th:field="*{name}">
+                    <div class="text-danger small" th:errors="*{name}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="profileType">Type</label>
+                    <select class="form-select" id="profileType" th:field="*{profileType}">
+                        <option th:each="type : ${profileTypes}" th:value="${type}" th:text="${type}"></option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="sourcePath">Source folder</label>
+                    <input class="form-control" id="sourcePath" th:field="*{sourcePath}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="targetPath">Target folder</label>
+                    <input class="form-control" id="targetPath" th:field="*{targetPath}">
+                </div>
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="allowTargetInsideSource" th:field="*{allowTargetInsideSource}">
+                        <label class="form-check-label" for="allowTargetInsideSource">Allow target folder inside source folder</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-card p-3 mb-3">
+            <h2 class="h5">Include and Exclude Patterns</h2>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="includePatternsText">Includes</label>
+                    <textarea class="form-control code-textarea" rows="16" id="includePatternsText" th:field="*{includePatternsText}"></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="excludePatternsText">Excludes</label>
+                    <textarea class="form-control code-textarea" rows="16" id="excludePatternsText" th:field="*{excludePatternsText}"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-card p-3 mb-3">
+            <h2 class="h5">Replacement Rule Editor</h2>
+            <label class="form-label" for="replacementRulesText">Rules</label>
+            <textarea class="form-control code-textarea" rows="8" id="replacementRulesText" th:field="*{replacementRulesText}"></textarea>
+        </div>
+
+        <div class="summary-card p-3 mb-3">
+            <h2 class="h5">Sensitive Term Editor</h2>
+            <label class="form-label" for="sensitiveTermRulesText">Rules</label>
+            <textarea class="form-control code-textarea" rows="8" id="sensitiveTermRulesText" th:field="*{sensitiveTermRulesText}"></textarea>
+        </div>
+
+        <div class="d-flex gap-2 mb-4">
+            <button class="btn btn-primary" type="submit">Save profile</button>
+            <a class="btn btn-outline-secondary" th:if="${profileId != null}" th:href="@{/profiles/{id}/validate(id=${profileId})}">Validate</a>
+        </div>
+    </form>
+
+    <div class="d-flex gap-2" th:if="${profileId != null}">
+        <form method="post" th:action="@{/profiles/{id}/dry-run(id=${profileId})}">
+            <button class="btn btn-success" type="submit">Run dry-run</button>
+        </form>
+        <a class="btn btn-warning" th:href="@{/profiles/{id}/execute(id=${profileId})}">Actual execution</a>
+        <a class="btn btn-outline-primary" th:href="@{/profiles/{id}/export.yml(id=${profileId})}">Export YAML</a>
+        <form method="post" th:action="@{/profiles/{id}/delete(id=${profileId})}">
+            <button class="btn btn-outline-danger" type="submit">Delete</button>
+        </form>
+    </div>
+</main>
+</body>
+</html>

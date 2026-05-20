@@ -1,0 +1,31 @@
+server:
+  address: 127.0.0.1
+  port: 8080
+
+spring:
+  application:
+    name: AiSafeCodeExporter
+  datasource:
+    url: jdbc:h2:file:~/.ai-safe-code-sync/aisafecodesync;AUTO_SERVER=FALSE;DATABASE_TO_UPPER=false
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+  thymeleaf:
+    cache: true
+
+logging:
+  file:
+    name: ${user.home}/.ai-safe-code-sync/logs/app.log
+  level:
+    root: INFO
+    com.inneo.aisafecodesync: INFO

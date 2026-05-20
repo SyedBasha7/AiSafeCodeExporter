@@ -1,0 +1,76 @@
+name: Inneo AI-safe export
+profileType: AI_SAFE_EXPORT
+sourcePath: C:\inneo\source\InneoCustomerPortal
+targetPath: C:\inneo\ai-safe-export\inneo-customer-portal
+includePatterns:
+  - "**/*.java"
+  - "**/*.xml"
+  - "**/*.properties"
+  - "**/*.yml"
+  - "**/*.yaml"
+  - "**/*.json"
+  - "**/*.sql"
+  - "**/*.md"
+  - "**/*.txt"
+  - "**/*.html"
+  - "**/*.css"
+  - "**/*.js"
+  - "**/*.ts"
+  - "**/*.gradle"
+  - "**/pom.xml"
+  - "**/build.gradle"
+  - "**/settings.gradle"
+excludePatterns:
+  - "**/target/**"
+  - "**/build/**"
+  - "**/out/**"
+  - "**/.git/**"
+  - "**/.idea/**"
+  - "**/.settings/**"
+  - "**/.vscode/**"
+  - "**/node_modules/**"
+  - "**/*.class"
+  - "**/*.jar"
+  - "**/*.war"
+  - "**/*.ear"
+  - "**/*.zip"
+  - "**/.env"
+  - "**/.env.*"
+  - "**/*secret*"
+  - "**/*credential*"
+  - "**/*password*"
+  - "**/*token*"
+  - "**/*.jks"
+  - "**/*.p12"
+  - "**/*.pem"
+  - "**/*.key"
+  - "**/application-prod.yml"
+  - "**/application-prod.properties"
+allowTargetInsideSource: false
+replacementRules:
+  - id: inneo-project
+    search: InneoCustomerPortal
+    replacement: inneo-app
+    caseSensitive: true
+    regex: false
+    enabled: true
+    applyTo:
+      - DIRECTORY_NAME
+      - FILE_NAME
+      - FILE_CONTENT
+  - id: inneo-tenant
+    search: InneoTenant
+    replacement: inneo-tenant
+    caseSensitive: true
+    regex: false
+    enabled: true
+    applyTo:
+      - FILE_CONTENT
+sensitiveTermRules:
+  - id: inneo-sensitive-values
+    values:
+      - InneoCustomerPortal
+      - InneoTenant
+      - InneoProduction
+    caseSensitive: true
+    enabled: true

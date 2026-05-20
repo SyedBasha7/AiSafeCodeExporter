@@ -1,0 +1,30 @@
+body {
+    background: #f6f7f9;
+}
+
+.navbar-brand {
+    font-weight: 700;
+}
+
+.page-shell {
+    max-width: 1320px;
+}
+
+.summary-card {
+    border: 1px solid #d9dee8;
+    border-radius: .5rem;
+    background: #fff;
+}
+
+.code-textarea {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: .875rem;
+}
+
+.table-fixed {
+    table-layout: fixed;
+}
+
+.path-cell {
+    overflow-wrap: anywhere;
+}

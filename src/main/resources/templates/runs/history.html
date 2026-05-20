@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Run History')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<main class="container page-shell py-4">
+    <h1 class="h3 mb-3">Run History</h1>
+    <div class="table-responsive summary-card">
+        <table class="table table-hover mb-0">
+            <thead>
+            <tr><th>Run</th><th>Profile</th><th>Mode</th><th>Status</th><th>Started</th><th>Ended</th><th></th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="run : ${runs}">
+                <td th:text="${run.id}">1</td>
+                <td th:text="${run.profileName}">Inneo</td>
+                <td th:text="${run.dryRun ? 'Dry-run' : 'Execution'}">Dry-run</td>
+                <td th:text="${run.status}">SUCCESS</td>
+                <td th:text="${run.startedAt}">start</td>
+                <td th:text="${run.endedAt}">end</td>
+                <td class="text-end"><a class="btn btn-sm btn-outline-primary" th:href="@{/reports/{id}(id=${run.id})}">Report</a></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(runs)}"><td colspan="7" class="text-secondary">No runs yet.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

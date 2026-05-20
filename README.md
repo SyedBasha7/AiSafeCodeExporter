@@ -1,1 +1,123 @@
 # AiSafeCodeExporter
+
+AiSafeCodeExporter is a local-only Spring Boot web application for creating an AI-safe, sanitised copy of a source-code project. It helps remove or replace customer, project, tenant, environment, credential, server, and organisation details before a copied target folder is shared with AI tools.
+
+The sync engine is independent of Spring MVC, so it can be reused by another interface later, such as a CLI.
+
+## Privacy Model
+
+- The application binds to `127.0.0.1:8080` by default.
+- Project data is never uploaded by the running application.
+- There is no telemetry, analytics, AI API integration, or external network call in application code.
+- Profiles and run history are stored in a local H2 database under `~/.ai-safe-code-sync/`.
+- Generated target files are not stored in the database.
+- Private browser reports may contain local paths and rule ids.
+- AI-safe JSON/CSV exports replace absolute roots with `${SOURCE_ROOT}` and `${TARGET_ROOT}` and redact replacement search values and sensitive terms.
+
+Do not paste real customer, tenant, server, environment, credential, organisation, or private project values into AI prompts. Use the exported AI-safe report and the sanitised target copy only.
+
+## Requirements
+
+- Java 21
+- Maven 3.9+
+
+## Run
+
+```powershell
+mvn spring-boot:run
+```
+
+Open:
+
+```text
+http://127.0.0.1:8080
+```
+
+The default binding is configured in `src/main/resources/application.yml`:
+
+```yaml
+server:
+  address: 127.0.0.1
+  port: 8080
+```
+
+## Build
+
+```powershell
+mvn clean package
+```
+
+## Test
+
+```powershell
+mvn test
+```
+
+## Browser Workflow
+
+1. Create a profile.
+2. Enter source and target folders.
+3. Review include and exclude patterns.
+4. Add replacement rules.
+5. Add sensitive term rules.
+6. Validate the configuration.
+7. Run dry-run.
+8. Review the private browser report.
+9. Confirm actual execution only after a successful dry-run.
+10. Export an AI-safe report as JSON or CSV if needed.
+
+For `AI_SAFE_EXPORT` profiles, actual execution is blocked until a recent successful dry-run exists for the exact same config hash. Editing the profile invalidates the previous dry-run.
+
+## Rule Format In The UI
+
+Replacement rules use one line per rule:
+
+```text
+id|search|replacement|caseSensitive|regex|enabled|applyTargets
+```
+
+Fake Inneo values:
+
+```text
+inneo-project|InneoCustomerPortal|inneo-app|true|false|true|DIRECTORY_NAME,FILE_NAME,FILE_CONTENT
+```
+
+Sensitive term rules use one line per rule:
+
+```text
+id|caseSensitive|enabled|comma-separated-values
+```
+
+Fake Inneo values:
+
+```text
+inneo-sensitive|true|true|InneoCustomerPortal,InneoTenant
+```
+
+## Default Safety Behaviour
+
+- Secret-like files are excluded by default.
+- Binary file contents are never transformed.
+- Target files are created or updated, but never deleted in v1.
+- Planning detects unreadable files, invalid target paths, mapping conflicts, and remaining sensitive leaks before execution.
+- If AI-safe leaks remain after transformation, dry-run is marked failed and execution is blocked.
+
+## YAML Import And Export
+
+Profiles can be exported and imported as YAML from the browser UI. Exported profile YAML can contain real replacement search values and sensitive terms, so keep those files private.
+
+`sample-profile.yml` contains fake values only.
+
+## Limitations
+
+- No deletion of target files in v1.
+- Content decoding uses UTF-8 for text files.
+- Replacement rule editing is intentionally server-rendered and text-based.
+- AI-safe export redaction is based on configured roots, replacement search values, and sensitive term values.
+
+## Future Enhancements
+
+- CLI interface backed by the same core engine.
+- Optional richer rule editor controls.
+- More text encoding detection options.
+- More granular report filtering for very large projects.

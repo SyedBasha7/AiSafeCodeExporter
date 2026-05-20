@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Profiles')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<main class="container page-shell py-4">
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h3 mb-0">Profiles</h1>
+        <a class="btn btn-primary" th:href="@{/profiles/new}">New profile</a>
+    </div>
+    <div class="table-responsive summary-card">
+        <table class="table table-hover mb-0">
+            <thead>
+            <tr><th>Name</th><th>Type</th><th>Source</th><th>Target</th><th>Last dry-run</th><th></th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="profile : ${profiles}">
+                <td th:text="${profile.name}">Inneo</td>
+                <td th:text="${profile.profileType}">AI_SAFE_EXPORT</td>
+                <td class="path-cell" th:text="${profile.sourcePath}"></td>
+                <td class="path-cell" th:text="${profile.targetPath}"></td>
+                <td th:text="${profile.lastSuccessfulDryRunAt}"></td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-primary" th:href="@{/profiles/{id}/edit(id=${profile.id})}">Edit</a>
+                    <a class="btn btn-sm btn-outline-secondary" th:href="@{/profiles/{id}/validate(id=${profile.id})}">Validate</a>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(profiles)}"><td colspan="6" class="text-secondary">No profiles yet.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

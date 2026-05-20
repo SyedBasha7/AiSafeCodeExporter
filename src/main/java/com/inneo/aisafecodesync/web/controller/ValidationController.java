@@ -19,6 +19,7 @@ public class ValidationController {
     public String validate(@PathVariable long id, Model model) {
         model.addAttribute("profile", profileService.getProfile(id));
         model.addAttribute("validation", profileService.validate(id));
+        model.addAttribute("profileStatus", profileService.status(id));
         return "validation/result";
     }
 }

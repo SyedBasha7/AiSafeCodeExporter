@@ -19,6 +19,13 @@
             <li th:each="error : ${validation.errors()}" th:text="${error}">Error</li>
         </ul>
     </div>
+    <div class="d-flex flex-wrap gap-2 mt-3">
+        <form method="post" th:if="${validation.valid()}" th:action="@{/profiles/{id}/dry-run(id=${profile.id})}">
+            <button class="btn btn-success" type="submit">Run dry-run</button>
+        </form>
+        <a class="btn btn-warning" th:if="${profileStatus.executionReady()}" th:href="@{/profiles/{id}/execute(id=${profile.id})}">Continue to execution</a>
+        <a class="btn btn-outline-primary" th:href="@{/profiles/{id}/edit(id=${profile.id})}">Edit profile</a>
+    </div>
 </main>
 </body>
 </html>

@@ -34,7 +34,7 @@ class ProfileYamlTest {
         ProfileYaml imported = yamlMapper.readValue(yaml, ProfileYaml.class);
         ProfileForm form = profileMapper.toForm(imported);
 
-        assertThat(yaml).contains("InneoTenant");
+        assertThat(yaml).contains("DemoTenant");
         assertThat(yaml).doesNotContain("syncRuns");
         assertThat(form.getName()).isEqualTo("Fake export");
         assertThat(profileMapper.toConfig(form).replacementRules()).singleElement()
@@ -57,8 +57,8 @@ class ProfileYamlTest {
         replacement.setProfile(profile);
         replacement.setSortOrder(0);
         replacement.setRuleId("tenant");
-        replacement.setSearchValue("InneoTenant");
-        replacement.setReplacementValue("inneo-tenant");
+        replacement.setSearchValue("DemoTenant");
+        replacement.setReplacementValue("demo-tenant");
         replacement.setCaseSensitive(true);
         replacement.setRegex(false);
         replacement.setEnabled(true);
@@ -69,7 +69,7 @@ class ProfileYamlTest {
         sensitive.setProfile(profile);
         sensitive.setSortOrder(0);
         sensitive.setRuleId("tenant-sensitive");
-        sensitive.setValues(List.of("InneoTenant"));
+        sensitive.setValues(List.of("DemoTenant"));
         sensitive.setCaseSensitive(true);
         sensitive.setEnabled(true);
         profile.getSensitiveTermRules().add(sensitive);

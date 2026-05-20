@@ -41,12 +41,12 @@ class ReportServiceTest {
 
     @Test
     void aiSafeExportUsesRunRedactionSnapshotWhenProfileChanged() throws Exception {
-        Path source = tempDir.resolve("InneoSecretProject-source");
-        Path target = tempDir.resolve("InneoSecretProject-target");
+        Path source = tempDir.resolve("DemoSecretProject-source");
+        Path target = tempDir.resolve("DemoSecretProject-target");
         SyncRunEntity run = run(source, target);
         run.setRedactionValuesJson(objectMapper.writeValueAsString(List.of(
-                new RedactionRuleSnapshot("replacement:old", List.of("InneoSecretProject"), true),
-                new RedactionRuleSnapshot("sensitive:old", List.of("InneoTenant"), true)
+                new RedactionRuleSnapshot("replacement:old", List.of("DemoSecretProject"), true),
+                new RedactionRuleSnapshot("sensitive:old", List.of("DemoTenant"), true)
         )));
         SyncProfileEntity changedProfile = new SyncProfileEntity();
         changedProfile.setName("Changed profile");
@@ -63,15 +63,15 @@ class ReportServiceTest {
         String json = service.aiSafeJson(7L);
         String csv = service.aiSafeCsv(7L);
 
-        assertThat(json).doesNotContain("InneoSecretProject", "InneoTenant", source.toString(), target.toString());
-        assertThat(csv).doesNotContain("InneoSecretProject", "InneoTenant", source.toString(), target.toString());
+        assertThat(json).doesNotContain("DemoSecretProject", "DemoTenant", source.toString(), target.toString());
+        assertThat(csv).doesNotContain("DemoSecretProject", "DemoTenant", source.toString(), target.toString());
         assertThat(json).contains("${SOURCE_ROOT}", "${TARGET_ROOT}", "[REDACTED]");
     }
 
     private SyncRunEntity run(Path source, Path target) {
         SyncRunEntity run = new SyncRunEntity();
         run.setId(7L);
-        run.setProfileName("InneoSecretProject export");
+        run.setProfileName("DemoSecretProject export");
         run.setProfileType(ProfileType.AI_SAFE_EXPORT);
         run.setDryRun(true);
         run.setStartedAt(Instant.parse("2026-01-01T00:00:00Z"));
@@ -82,17 +82,17 @@ class ReportServiceTest {
         run.setTargetRoot(target.toString());
 
         SyncReportEntry entry = new SyncReportEntry(
-                source.resolve("InneoSecretProject/App.java").toString(),
-                target.resolve("InneoTenant/App.java").toString(),
-                "InneoSecretProject/App.java",
-                "InneoTenant/App.java",
+                source.resolve("DemoSecretProject/App.java").toString(),
+                target.resolve("DemoTenant/App.java").toString(),
+                "DemoSecretProject/App.java",
+                "DemoTenant/App.java",
                 OperationType.LEAK_DETECTED,
                 OperationStatus.BLOCKED,
                 Map.of("old", 1),
                 Map.of("old", 1),
                 Set.of("old"),
-                List.of(new com.inneo.aisafecodesync.core.scan.LeakFinding("sensitive:old", "PATH", "InneoTenant/App.java", 1, "InneoTenant remains")),
-                "InneoSecretProject was not fully redacted"
+                List.of(new com.inneo.aisafecodesync.core.scan.LeakFinding("sensitive:old", "PATH", "DemoTenant/App.java", 1, "DemoTenant remains")),
+                "DemoSecretProject was not fully redacted"
         );
         SyncReportEntryEntity entryEntity = runReportMapper.toEntity(entry, run);
         run.getEntries().add(entryEntity);

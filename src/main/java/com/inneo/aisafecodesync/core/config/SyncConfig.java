@@ -42,7 +42,7 @@ public record SyncConfig(
 
     public static SyncConfig emptyAiSafeProfile() {
         return new SyncConfig(
-                "Inneo AI-safe export",
+                "AI-safe export profile",
                 ProfileType.AI_SAFE_EXPORT,
                 null,
                 null,

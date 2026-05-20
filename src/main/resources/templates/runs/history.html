@@ -13,7 +13,7 @@
             <tbody>
             <tr th:each="run : ${runs}">
                 <td th:text="${run.id}">1</td>
-                <td th:text="${run.profileName}">Inneo</td>
+                <td th:text="${run.profileName}">Profile</td>
                 <td th:text="${run.dryRun ? 'Dry-run' : 'Execution'}">Dry-run</td>
                 <td th:text="${run.status}">SUCCESS</td>
                 <td th:text="${run.startedAt}">start</td>

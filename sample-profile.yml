@@ -1,7 +1,7 @@
-name: Inneo AI-safe export
+name: AI-safe export profile
 profileType: AI_SAFE_EXPORT
-sourcePath: C:\inneo\source\InneoCustomerPortal
-targetPath: C:\inneo\ai-safe-export\inneo-customer-portal
+sourcePath: C:\demo\source\DemoCustomerPortal
+targetPath: C:\demo\ai-safe-export\demo-customer-portal
 includePatterns:
   - "**/*.java"
   - "**/*.xml"
@@ -48,9 +48,9 @@ excludePatterns:
   - "**/application-prod.properties"
 allowTargetInsideSource: false
 replacementRules:
-  - id: inneo-project
-    search: InneoCustomerPortal
-    replacement: inneo-app
+  - id: project-name
+    search: DemoCustomerPortal
+    replacement: demo-app
     caseSensitive: true
     regex: false
     enabled: true
@@ -58,19 +58,19 @@ replacementRules:
       - DIRECTORY_NAME
       - FILE_NAME
       - FILE_CONTENT
-  - id: inneo-tenant
-    search: InneoTenant
-    replacement: inneo-tenant
+  - id: tenant-name
+    search: DemoTenant
+    replacement: demo-tenant
     caseSensitive: true
     regex: false
     enabled: true
     applyTo:
       - FILE_CONTENT
 sensitiveTermRules:
-  - id: inneo-sensitive-values
+  - id: demo-sensitive-values
     values:
-      - InneoCustomerPortal
-      - InneoTenant
-      - InneoProduction
+      - DemoCustomerPortal
+      - DemoTenant
+      - DemoProduction
     caseSensitive: true
     enabled: true

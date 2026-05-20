@@ -60,11 +60,12 @@ mvn test
 3. Review include and exclude patterns.
 4. Add replacement rules.
 5. Add sensitive term rules.
-6. Validate the configuration.
-7. Run dry-run.
-8. Review the private browser report.
-9. Confirm actual execution only after a successful dry-run.
-10. Export an AI-safe report as JSON or CSV if needed.
+6. Save the profile as a draft.
+7. Validate the configuration.
+8. Run dry-run.
+9. Review the private browser report.
+10. Confirm actual execution only after a successful dry-run.
+11. Export an AI-safe report as JSON or CSV if needed.
 
 For `AI_SAFE_EXPORT` profiles, actual execution is blocked until a recent successful dry-run exists for the exact same config hash. Editing the profile invalidates the previous dry-run.
 
@@ -76,10 +77,10 @@ Replacement rules use one line per rule:
 id|search|replacement|caseSensitive|regex|enabled|applyTargets
 ```
 
-Fake Inneo values:
+Fake values:
 
 ```text
-inneo-project|InneoCustomerPortal|inneo-app|true|false|true|DIRECTORY_NAME,FILE_NAME,FILE_CONTENT
+project-name|DemoCustomerPortal|demo-app|true|false|true|DIRECTORY_NAME,FILE_NAME,FILE_CONTENT
 ```
 
 Sensitive term rules use one line per rule:
@@ -88,10 +89,10 @@ Sensitive term rules use one line per rule:
 id|caseSensitive|enabled|comma-separated-values
 ```
 
-Fake Inneo values:
+Fake values:
 
 ```text
-inneo-sensitive|true|true|InneoCustomerPortal,InneoTenant
+demo-sensitive|true|true|DemoCustomerPortal,DemoTenant
 ```
 
 ## Default Safety Behaviour

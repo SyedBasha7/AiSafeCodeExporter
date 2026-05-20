@@ -35,7 +35,7 @@
                 </thead>
                 <tbody>
                 <tr th:each="profile : ${profiles}">
-                    <td th:text="${profile.name}">Inneo</td>
+                    <td th:text="${profile.name}">Profile</td>
                     <td th:text="${profile.profileType}">AI_SAFE_EXPORT</td>
                     <td class="path-cell" th:text="${profile.sourcePath}"></td>
                     <td class="path-cell" th:text="${profile.targetPath}"></td>
@@ -56,7 +56,7 @@
                 <tbody>
                 <tr th:each="run : ${recentRuns}">
                     <td th:text="${run.id}">1</td>
-                    <td th:text="${run.profileName}">Inneo</td>
+                    <td th:text="${run.profileName}">Profile</td>
                     <td th:text="${run.dryRun ? 'Dry-run' : 'Execution'}">Dry-run</td>
                     <td th:text="${run.status}">SUCCESS</td>
                     <td th:text="${run.startedAt}">time</td>

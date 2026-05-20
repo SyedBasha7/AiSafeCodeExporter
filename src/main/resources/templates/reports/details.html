@@ -7,6 +7,9 @@
     <div class="d-flex align-items-center justify-content-between mb-3">
         <h1 class="h3 mb-0">Private Browser Report</h1>
         <div class="d-flex gap-2">
+            <a class="btn btn-warning"
+               th:if="${profileId != null && report.dryRun() && report.status() == 'SUCCESS'}"
+               th:href="@{/profiles/{id}/execute(id=${profileId})}">Continue to execution</a>
             <a class="btn btn-outline-primary" th:href="@{/reports/{id}/export.json(id=${report.runId()})}">AI-safe JSON</a>
             <a class="btn btn-outline-primary" th:href="@{/reports/{id}/export.csv(id=${report.runId()})}">AI-safe CSV</a>
             <a class="btn btn-outline-secondary" th:href="@{/runs}">History</a>

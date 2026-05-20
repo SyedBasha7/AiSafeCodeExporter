@@ -28,3 +28,59 @@ body {
 .path-cell {
     overflow-wrap: anywhere;
 }
+
+.sticky-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    border-top: 1px solid #d9dee8;
+    background: rgba(246, 247, 249, .96);
+    backdrop-filter: blur(6px);
+}
+
+.rule-table th,
+.rule-table td {
+    vertical-align: middle;
+}
+
+.rule-table .form-control,
+.rule-table .form-select {
+    min-width: 9rem;
+}
+
+.rule-table .rule-id {
+    min-width: 8rem;
+}
+
+.rule-table .rule-private {
+    min-width: 14rem;
+}
+
+.rule-table .rule-small {
+    width: 5.5rem;
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    border-radius: 999px;
+    padding: .25rem .65rem;
+    font-size: .875rem;
+    font-weight: 600;
+}
+
+.status-pill.ok {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+.status-pill.warn {
+    background: #fff3cd;
+    color: #664d03;
+}
+
+.status-pill.blocked {
+    background: #f8d7da;
+    color: #842029;
+}

@@ -9,13 +9,44 @@
         <h1 class="h3 mb-0" th:text="${profileId == null ? 'New profile' : 'Edit profile'}">Profile</h1>
         <a class="btn btn-outline-secondary" th:href="@{/profiles}">Back</a>
     </div>
+
+    <div class="summary-card p-3 mb-3" th:if="${profileStatus != null}">
+        <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
+            <div>
+                <h2 class="h5 mb-2">Readiness</h2>
+                <div class="d-flex flex-wrap gap-2">
+                    <span th:class="${profileStatus.validationPassed()} ? 'status-pill ok' : 'status-pill blocked'"
+                          th:text="${profileStatus.validationPassed()} ? 'Validation passed' : 'Validation needed'">Validation</span>
+                    <span th:class="${profileStatus.dryRunCurrent()} ? 'status-pill ok' : 'status-pill warn'"
+                          th:text="${profileStatus.dryRunCurrent()} ? 'Dry-run current' : 'Dry-run required'">Dry-run</span>
+                    <span th:class="${profileStatus.executionReady()} ? 'status-pill ok' : 'status-pill blocked'"
+                          th:text="${profileStatus.executionReady()} ? 'Execution ready' : 'Execution blocked'">Execution</span>
+                </div>
+            </div>
+            <dl class="mb-0 small">
+                <dt>Last successful dry-run</dt>
+                <dd class="mb-1" th:text="${profileStatus.lastSuccessfulDryRunAt() != null ? profileStatus.lastSuccessfulDryRunAt() : 'None'}">None</dd>
+                <dt>Config hash</dt>
+                <dd class="mb-0 code-textarea" th:text="${profileStatus.configHash()}">hash</dd>
+            </dl>
+        </div>
+        <div class="alert alert-warning mt-3 mb-0" th:if="${!profileStatus.validationPassed()}">
+            <div th:each="error : ${profileStatus.validationErrors()}" th:text="${error}">Validation issue</div>
+        </div>
+        <div class="alert alert-warning mt-3 mb-0" th:if="${profileStatus.validationPassed() && !profileStatus.executionReady()}">
+            <div th:each="block : ${profileStatus.executionBlocks()}" th:text="${block}">Execution block</div>
+        </div>
+    </div>
+
     <div class="alert alert-warning">
         AI-safe export profiles require a successful dry-run for the exact current configuration before execution.
     </div>
-    <form method="post" th:object="${profileForm}" th:action="${profileId == null ? '/profiles' : '/profiles/' + profileId}">
+
+    <form id="profileForm" method="post" th:object="${profileForm}" th:action="${profileId == null ? '/profiles' : '/profiles/' + profileId}">
         <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
             <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">Validation error</div>
         </div>
+
         <div class="summary-card p-3 mb-3">
             <h2 class="h5">Profile</h2>
             <div class="row g-3">
@@ -32,63 +63,412 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label" for="sourcePath">Source folder</label>
-                    <input class="form-control" id="sourcePath" th:field="*{sourcePath}">
+                    <input class="form-control path-input" id="sourcePath" th:field="*{sourcePath}" autocomplete="off">
+                    <div class="form-text path-preview" data-for="sourcePath"></div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label" for="targetPath">Target folder</label>
-                    <input class="form-control" id="targetPath" th:field="*{targetPath}">
+                    <div class="input-group">
+                        <input class="form-control path-input" id="targetPath" th:field="*{targetPath}" autocomplete="off">
+                        <button class="btn btn-outline-secondary" type="button" id="suggestTargetButton">Suggest</button>
+                    </div>
+                    <div class="form-text path-preview" data-for="targetPath"></div>
                 </div>
                 <div class="col-12">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="allowTargetInsideSource" th:field="*{allowTargetInsideSource}">
                         <label class="form-check-label" for="allowTargetInsideSource">Allow target folder inside source folder</label>
                     </div>
+                    <div class="alert alert-warning mt-2 mb-0 d-none" id="targetInsideWarning">
+                        Target appears to be inside the source folder.
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="summary-card p-3 mb-3">
-            <h2 class="h5">Include and Exclude Patterns</h2>
+            <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+                <h2 class="h5 mb-0">Include and Exclude Patterns</h2>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary" type="button" id="restoreIncludesButton">Restore includes</button>
+                    <button class="btn btn-outline-secondary" type="button" id="restoreExcludesButton">Restore excludes</button>
+                    <button class="btn btn-outline-secondary" type="button" id="addNodeExcludesButton">Add Node excludes</button>
+                </div>
+            </div>
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label" for="includePatternsText">Includes</label>
-                    <textarea class="form-control code-textarea" rows="16" id="includePatternsText" th:field="*{includePatternsText}"></textarea>
+                    <textarea class="form-control code-textarea" rows="12" id="includePatternsText" th:field="*{includePatternsText}"></textarea>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label" for="excludePatternsText">Excludes</label>
-                    <textarea class="form-control code-textarea" rows="16" id="excludePatternsText" th:field="*{excludePatternsText}"></textarea>
+                    <textarea class="form-control code-textarea" rows="12" id="excludePatternsText" th:field="*{excludePatternsText}"></textarea>
                 </div>
             </div>
         </div>
 
         <div class="summary-card p-3 mb-3">
-            <h2 class="h5">Replacement Rule Editor</h2>
-            <label class="form-label" for="replacementRulesText">Rules</label>
-            <textarea class="form-control code-textarea" rows="8" id="replacementRulesText" th:field="*{replacementRulesText}"></textarea>
+            <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+                <h2 class="h5 mb-0">Replacement Rules</h2>
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="showPrivateValues">
+                        <label class="form-check-label" for="showPrivateValues">Show private values</label>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary" type="button" id="addReplacementRuleButton">Add rule</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm rule-table" id="replacementRulesTable">
+                    <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Search</th>
+                        <th>Replacement</th>
+                        <th>Case</th>
+                        <th>Regex</th>
+                        <th>On</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <details class="mt-2">
+                <summary>Advanced text</summary>
+                <textarea class="form-control code-textarea mt-2" rows="6" id="replacementRulesText" th:field="*{replacementRulesText}"></textarea>
+                <button class="btn btn-sm btn-outline-secondary mt-2" type="button" id="reloadReplacementRulesButton">Reload table</button>
+            </details>
         </div>
 
         <div class="summary-card p-3 mb-3">
-            <h2 class="h5">Sensitive Term Editor</h2>
-            <label class="form-label" for="sensitiveTermRulesText">Rules</label>
-            <textarea class="form-control code-textarea" rows="8" id="sensitiveTermRulesText" th:field="*{sensitiveTermRulesText}"></textarea>
+            <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+                <h2 class="h5 mb-0">Sensitive Terms</h2>
+                <button class="btn btn-sm btn-outline-primary" type="button" id="addSensitiveRuleButton">Add rule</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm rule-table" id="sensitiveRulesTable">
+                    <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Values</th>
+                        <th>Case</th>
+                        <th>Enabled</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <details class="mt-2">
+                <summary>Advanced text</summary>
+                <textarea class="form-control code-textarea mt-2" rows="6" id="sensitiveTermRulesText" th:field="*{sensitiveTermRulesText}"></textarea>
+                <button class="btn btn-sm btn-outline-secondary mt-2" type="button" id="reloadSensitiveRulesButton">Reload table</button>
+            </details>
         </div>
 
-        <div class="d-flex gap-2 mb-4">
-            <button class="btn btn-primary" type="submit">Save profile</button>
-            <a class="btn btn-outline-secondary" th:if="${profileId != null}" th:href="@{/profiles/{id}/validate(id=${profileId})}">Validate</a>
+        <div class="sticky-actions py-3 mt-4">
+            <div class="container page-shell px-0">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <button class="btn btn-primary" type="submit">Save draft</button>
+                    <a class="btn btn-outline-secondary" data-disable-when-dirty="true"
+                       th:if="${profileId != null}" th:href="@{/profiles/{id}/validate(id=${profileId})}">Validate</a>
+                    <span class="text-secondary small" id="unsavedIndicator" hidden>Unsaved changes</span>
+                </div>
+            </div>
         </div>
     </form>
 
-    <div class="d-flex gap-2" th:if="${profileId != null}">
+    <div class="d-flex flex-wrap gap-2 mt-3" th:if="${profileId != null}">
         <form method="post" th:action="@{/profiles/{id}/dry-run(id=${profileId})}">
-            <button class="btn btn-success" type="submit">Run dry-run</button>
+            <button class="btn btn-success" type="submit" data-disable-when-dirty="true"
+                    th:disabled="${profileStatus != null && !profileStatus.validationPassed()}">Run dry-run</button>
         </form>
-        <a class="btn btn-warning" th:href="@{/profiles/{id}/execute(id=${profileId})}">Actual execution</a>
+        <a class="btn btn-warning" data-disable-when-dirty="true"
+           th:if="${profileStatus != null && profileStatus.executionReady()}"
+           th:href="@{/profiles/{id}/execute(id=${profileId})}">Actual execution</a>
+        <a class="btn btn-outline-warning" data-disable-when-dirty="true"
+           th:if="${profileStatus == null || !profileStatus.executionReady()}"
+           th:href="@{/profiles/{id}/execute(id=${profileId})}">Review execution readiness</a>
         <a class="btn btn-outline-primary" th:href="@{/profiles/{id}/export.yml(id=${profileId})}">Export YAML</a>
         <form method="post" th:action="@{/profiles/{id}/delete(id=${profileId})}">
             <button class="btn btn-outline-danger" type="submit">Delete</button>
         </form>
+        <span class="text-secondary small align-self-center" id="saveBeforeRunMessage" hidden>Save draft before running validation, dry-run, or execution.</span>
     </div>
 </main>
+
+<script>
+(() => {
+    const defaultIncludes = [
+        "**/*.java", "**/*.xml", "**/*.properties", "**/*.yml", "**/*.yaml", "**/*.json",
+        "**/*.sql", "**/*.md", "**/*.txt", "**/*.html", "**/*.css", "**/*.js", "**/*.ts",
+        "**/*.gradle", "**/pom.xml", "**/build.gradle", "**/settings.gradle"
+    ];
+    const defaultExcludes = [
+        "**/target/**", "**/build/**", "**/out/**", "**/.git/**", "**/.idea/**", "**/.settings/**",
+        "**/.vscode/**", "**/node_modules/**", "**/*.class", "**/*.jar", "**/*.war", "**/*.ear",
+        "**/*.zip", "**/*.7z", "**/*.tar", "**/*.gz", "**/.env", "**/.env.*", "**/*secret*",
+        "**/*Secret*", "**/*credential*", "**/*Credential*", "**/*credentials*", "**/*Credentials*",
+        "**/*password*", "**/*Password*", "**/*passwd*", "**/*token*", "**/*Token*", "**/*.jks",
+        "**/*.p12", "**/*.pfx", "**/*.pem", "**/*.key", "**/*.crt", "**/application-prod.yml",
+        "**/application-prod.yaml", "**/application-prod.properties", "**/application-local.yml",
+        "**/application-local.yaml", "**/application-local.properties", "**/bootstrap-prod.yml",
+        "**/bootstrap-prod.yaml", "**/bootstrap-prod.properties"
+    ];
+
+    const form = document.getElementById("profileForm");
+    const unsaved = document.getElementById("unsavedIndicator");
+    const replacementText = document.getElementById("replacementRulesText");
+    const sensitiveText = document.getElementById("sensitiveTermRulesText");
+    const replacementBody = document.querySelector("#replacementRulesTable tbody");
+    const sensitiveBody = document.querySelector("#sensitiveRulesTable tbody");
+
+    function markDirty() {
+        if (unsaved) unsaved.hidden = false;
+        document.querySelectorAll("[data-disable-when-dirty]").forEach((element) => {
+            if (element.tagName === "A") {
+                element.classList.add("disabled");
+                element.setAttribute("aria-disabled", "true");
+                if (element.hasAttribute("href")) {
+                    element.dataset.originalHref = element.getAttribute("href");
+                    element.removeAttribute("href");
+                }
+            } else {
+                element.disabled = true;
+            }
+        });
+        const saveBeforeRun = document.getElementById("saveBeforeRunMessage");
+        if (saveBeforeRun) saveBeforeRun.hidden = false;
+    }
+
+    function bool(value, fallback) {
+        if (value === undefined || value === null || value === "") return fallback;
+        return value.toLowerCase() === "true";
+    }
+
+    function normalizePath(value) {
+        return (value || "").trim().replaceAll("\\\\", "/").replace(/\\/+/g, "/");
+    }
+
+    function parentPath(value) {
+        const normalized = normalizePath(value);
+        const index = normalized.lastIndexOf("/");
+        return index > 0 ? normalized.substring(0, index) : normalized;
+    }
+
+    function updatePathPreviews() {
+        document.querySelectorAll(".path-input").forEach(input => {
+            const preview = document.querySelector(`.path-preview[data-for="${input.id}"]`);
+            if (preview) preview.textContent = input.value ? normalizePath(input.value) : "";
+        });
+        const source = normalizePath(document.getElementById("sourcePath").value);
+        const target = normalizePath(document.getElementById("targetPath").value);
+        const allow = document.getElementById("allowTargetInsideSource").checked;
+        const warning = document.getElementById("targetInsideWarning");
+        warning.classList.toggle("d-none", !source || !target || allow || !target.startsWith(source + "/"));
+    }
+
+    function splitRuleLine(line) {
+        return line.split("|");
+    }
+
+    function parseReplacementRules() {
+        replacementBody.innerHTML = "";
+        replacementText.value.split(/\r?\n/).forEach(line => {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith("#")) return;
+            const parts = splitRuleLine(line);
+            addReplacementRule({
+                id: (parts[0] || "").trim(),
+                search: parts[1] || "",
+                replacement: parts[2] || "",
+                caseSensitive: bool(parts[3], true),
+                regex: bool(parts[4], false),
+                enabled: bool(parts[5], true),
+                applyTo: (parts[6] || "DIRECTORY_NAME,FILE_NAME,FILE_CONTENT").split(",").map(value => value.trim())
+            });
+        });
+    }
+
+    function parseSensitiveRules() {
+        sensitiveBody.innerHTML = "";
+        sensitiveText.value.split(/\r?\n/).forEach(line => {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith("#")) return;
+            const parts = splitRuleLine(line);
+            addSensitiveRule({
+                id: (parts[0] || "").trim(),
+                caseSensitive: bool(parts[1], true),
+                enabled: bool(parts[2], true),
+                values: parts[3] || ""
+            });
+        });
+    }
+
+    function checkbox(checked, className, value, label) {
+        return `<label class="form-check form-check-inline mb-0">
+            <input class="form-check-input ${className}" type="checkbox" value="${value}" ${checked ? "checked" : ""}>
+            <span class="form-check-label">${label}</span>
+        </label>`;
+    }
+
+    function addReplacementRule(rule = {}) {
+        const targets = rule.applyTo || ["DIRECTORY_NAME", "FILE_NAME", "FILE_CONTENT"];
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td><input class="form-control form-control-sm rule-id rule-replacement-id" value="${escapeHtml(rule.id || "")}"></td>
+            <td><input class="form-control form-control-sm rule-private private-value rule-replacement-search" type="password" value="${escapeHtml(rule.search || "")}"></td>
+            <td><input class="form-control form-control-sm rule-private rule-replacement-value" value="${escapeHtml(rule.replacement || "")}"></td>
+            <td>${checkbox(rule.caseSensitive !== false, "rule-replacement-case", "caseSensitive", "Case")}</td>
+            <td>${checkbox(rule.regex === true, "rule-replacement-regex", "regex", "Regex")}</td>
+            <td class="text-nowrap">
+                ${checkbox(targets.includes("DIRECTORY_NAME"), "rule-replacement-target", "DIRECTORY_NAME", "Dir")}
+                ${checkbox(targets.includes("FILE_NAME"), "rule-replacement-target", "FILE_NAME", "File")}
+                ${checkbox(targets.includes("FILE_CONTENT"), "rule-replacement-target", "FILE_CONTENT", "Content")}
+                ${checkbox(rule.enabled !== false, "rule-replacement-enabled", "enabled", "Enabled")}
+            </td>
+            <td class="text-end text-nowrap">
+                <button class="btn btn-sm btn-outline-secondary duplicate-row" type="button">Duplicate</button>
+                <button class="btn btn-sm btn-outline-danger remove-row" type="button">Remove</button>
+            </td>`;
+        replacementBody.appendChild(row);
+        applyPrivateVisibility();
+        markDirty();
+    }
+
+    function addSensitiveRule(rule = {}) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td><input class="form-control form-control-sm rule-id rule-sensitive-id" value="${escapeHtml(rule.id || "")}"></td>
+            <td><input class="form-control form-control-sm rule-private private-value rule-sensitive-values" type="password" value="${escapeHtml(rule.values || "")}"></td>
+            <td>${checkbox(rule.caseSensitive !== false, "rule-sensitive-case", "caseSensitive", "Case")}</td>
+            <td>${checkbox(rule.enabled !== false, "rule-sensitive-enabled", "enabled", "Enabled")}</td>
+            <td class="text-end text-nowrap">
+                <button class="btn btn-sm btn-outline-secondary duplicate-row" type="button">Duplicate</button>
+                <button class="btn btn-sm btn-outline-danger remove-row" type="button">Remove</button>
+            </td>`;
+        sensitiveBody.appendChild(row);
+        applyPrivateVisibility();
+        markDirty();
+    }
+
+    function serializeReplacementRules() {
+        const lines = [];
+        replacementBody.querySelectorAll("tr").forEach(row => {
+            const targets = Array.from(row.querySelectorAll(".rule-replacement-target:checked")).map(input => input.value);
+            lines.push([
+                row.querySelector(".rule-replacement-id").value.trim(),
+                row.querySelector(".rule-replacement-search").value,
+                row.querySelector(".rule-replacement-value").value,
+                row.querySelector(".rule-replacement-case").checked,
+                row.querySelector(".rule-replacement-regex").checked,
+                row.querySelector(".rule-replacement-enabled").checked,
+                targets.join(",")
+            ].join("|"));
+        });
+        replacementText.value = lines.join("\n");
+    }
+
+    function serializeSensitiveRules() {
+        const lines = [];
+        sensitiveBody.querySelectorAll("tr").forEach(row => {
+            lines.push([
+                row.querySelector(".rule-sensitive-id").value.trim(),
+                row.querySelector(".rule-sensitive-case").checked,
+                row.querySelector(".rule-sensitive-enabled").checked,
+                row.querySelector(".rule-sensitive-values").value
+            ].join("|"));
+        });
+        sensitiveText.value = lines.join("\n");
+    }
+
+    function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, char => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            "\"": "&quot;",
+            "'": "&#39;"
+        }[char]));
+    }
+
+    function applyPrivateVisibility() {
+        const visible = document.getElementById("showPrivateValues").checked;
+        document.querySelectorAll(".private-value").forEach(input => {
+            input.type = visible ? "text" : "password";
+        });
+    }
+
+    function appendUnique(textarea, values) {
+        const existing = new Set(textarea.value.split(/\r?\n/).map(line => line.trim()).filter(Boolean));
+        values.forEach(value => existing.add(value));
+        textarea.value = Array.from(existing).join("\n");
+        markDirty();
+    }
+
+    document.addEventListener("input", event => {
+        if (event.target.closest("form")) markDirty();
+        if (event.target.classList.contains("path-input")) updatePathPreviews();
+    });
+    document.addEventListener("change", event => {
+        if (event.target.closest("form")) markDirty();
+        if (event.target.id === "allowTargetInsideSource") updatePathPreviews();
+    });
+    document.addEventListener("click", event => {
+        if (event.target.id === "suggestTargetButton") {
+            const source = document.getElementById("sourcePath").value;
+            if (source) {
+                document.getElementById("targetPath").value = `${parentPath(source)}/${source.split(/[\\/]/).filter(Boolean).pop()}-ai-safe-export`;
+                updatePathPreviews();
+                markDirty();
+            }
+        }
+        if (event.target.id === "restoreIncludesButton") {
+            document.getElementById("includePatternsText").value = defaultIncludes.join("\n");
+            markDirty();
+        }
+        if (event.target.id === "restoreExcludesButton") {
+            document.getElementById("excludePatternsText").value = defaultExcludes.join("\n");
+            markDirty();
+        }
+        if (event.target.id === "addNodeExcludesButton") {
+            appendUnique(document.getElementById("excludePatternsText"), ["**/node_modules/**", "**/dist/**", "**/.next/**", "**/coverage/**"]);
+        }
+        if (event.target.id === "addReplacementRuleButton") addReplacementRule();
+        if (event.target.id === "addSensitiveRuleButton") addSensitiveRule();
+        if (event.target.id === "reloadReplacementRulesButton") parseReplacementRules();
+        if (event.target.id === "reloadSensitiveRulesButton") parseSensitiveRules();
+        if (event.target.id === "showPrivateValues") applyPrivateVisibility();
+        if (event.target.classList.contains("remove-row")) {
+            event.target.closest("tr").remove();
+            markDirty();
+        }
+        if (event.target.classList.contains("duplicate-row")) {
+            const row = event.target.closest("tr");
+            const clone = row.cloneNode(true);
+            row.after(clone);
+            applyPrivateVisibility();
+            markDirty();
+        }
+    });
+    form.addEventListener("submit", () => {
+        serializeReplacementRules();
+        serializeSensitiveRules();
+        if (unsaved) unsaved.hidden = true;
+    });
+    window.addEventListener("beforeunload", event => {
+        if (unsaved && !unsaved.hidden) {
+            event.preventDefault();
+            event.returnValue = "";
+        }
+    });
+
+    parseReplacementRules();
+    parseSensitiveRules();
+    updatePathPreviews();
+    if (unsaved) unsaved.hidden = true;
+})();
+</script>
 </body>
 </html>

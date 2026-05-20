@@ -32,6 +32,7 @@ public class ReportController {
     public String details(@PathVariable long id, Model model) {
         SyncReport report = reportService.privateReport(id);
         model.addAttribute("report", report);
+        model.addAttribute("profileId", reportService.profileIdForRun(id));
         return "reports/details";
     }
 

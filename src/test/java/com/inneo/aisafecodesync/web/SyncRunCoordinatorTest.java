@@ -46,7 +46,7 @@ class SyncRunCoordinatorTest {
         Files.createDirectories(target);
         SyncProfileEntity profile = new SyncProfileEntity();
         profile.setId(11L);
-        profile.setName("Inneo profile");
+        profile.setName("Demo profile");
         profile.setProfileType(ProfileType.AI_SAFE_EXPORT);
         profile.setSourcePath(source.toString());
         profile.setTargetPath(target.toString());

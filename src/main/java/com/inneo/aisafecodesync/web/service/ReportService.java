@@ -72,6 +72,13 @@ public class ReportService {
     }
 
     @Transactional(readOnly = true)
+    public Long profileIdForRun(long runId) {
+        SyncRunEntity run = getRun(runId);
+        SyncProfileEntity profile = run.getProfile();
+        return profile == null ? null : profile.getId();
+    }
+
+    @Transactional(readOnly = true)
     public String aiSafeJson(long runId) {
         SyncRunEntity run = getRun(runId);
         SyncConfig config = configForRun(run);

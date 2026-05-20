@@ -48,6 +48,7 @@ public class ProfileController {
     public String newProfile(Model model) {
         model.addAttribute("profileForm", profileService.newForm());
         model.addAttribute("profileId", null);
+        model.addAttribute("profileStatus", null);
         return "profiles/form";
     }
 
@@ -55,15 +56,17 @@ public class ProfileController {
     public String create(@Valid @ModelAttribute("profileForm") ProfileForm form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("profileId", null);
+            model.addAttribute("profileStatus", null);
             return "profiles/form";
         }
         try {
             long id = profileService.create(form).getId();
-            redirectAttributes.addFlashAttribute("message", "Profile created.");
+            redirectAttributes.addFlashAttribute("message", "Draft profile saved.");
             return "redirect:/profiles/" + id + "/edit";
         } catch (ConfigValidationException ex) {
             ex.getErrors().forEach(error -> bindingResult.reject("profile.invalid", error));
             model.addAttribute("profileId", null);
+            model.addAttribute("profileStatus", null);
             return "profiles/form";
         }
     }
@@ -72,6 +75,7 @@ public class ProfileController {
     public String edit(@PathVariable long id, Model model) {
         model.addAttribute("profileForm", profileService.getForm(id));
         model.addAttribute("profileId", id);
+        model.addAttribute("profileStatus", profileService.status(id));
         return "profiles/form";
     }
 
@@ -79,15 +83,17 @@ public class ProfileController {
     public String update(@PathVariable long id, @Valid @ModelAttribute("profileForm") ProfileForm form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("profileId", id);
+            model.addAttribute("profileStatus", null);
             return "profiles/form";
         }
         try {
             profileService.update(id, form);
-            redirectAttributes.addFlashAttribute("message", "Profile saved. Run dry-run again before execution.");
+            redirectAttributes.addFlashAttribute("message", "Draft profile saved. Validate and run dry-run before execution.");
             return "redirect:/profiles/" + id + "/edit";
         } catch (ConfigValidationException ex) {
             ex.getErrors().forEach(error -> bindingResult.reject("profile.invalid", error));
             model.addAttribute("profileId", id);
+            model.addAttribute("profileStatus", null);
             return "profiles/form";
         }
     }

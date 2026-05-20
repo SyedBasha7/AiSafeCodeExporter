@@ -1,5 +1,6 @@
 package com.inneo.aisafecodesync.web.service;
 
+import com.inneo.aisafecodesync.core.config.ConfigHasher;
 import com.inneo.aisafecodesync.core.config.SyncConfig;
 import com.inneo.aisafecodesync.core.validation.SyncConfigValidator;
 import com.inneo.aisafecodesync.core.validation.ValidationResult;
@@ -9,6 +10,7 @@ import com.inneo.aisafecodesync.persistence.entity.SyncProfileEntity;
 import com.inneo.aisafecodesync.persistence.repository.SyncProfileRepository;
 import com.inneo.aisafecodesync.persistence.repository.SyncRunRepository;
 import com.inneo.aisafecodesync.web.dto.ProfileForm;
+import com.inneo.aisafecodesync.web.dto.ProfileStatus;
 import com.inneo.aisafecodesync.web.dto.ProfileYaml;
 import com.inneo.aisafecodesync.web.mapper.ProfileMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -27,13 +29,24 @@ public class ProfileService {
     private final SyncRunRepository runRepository;
     private final ProfileMapper profileMapper;
     private final SyncConfigValidator configValidator;
+    private final ConfigHasher configHasher;
+    private final ExecutionEligibilityService executionEligibilityService;
     private final ObjectMapper yamlMapper;
 
-    public ProfileService(SyncProfileRepository profileRepository, SyncRunRepository runRepository, ProfileMapper profileMapper, SyncConfigValidator configValidator) {
+    public ProfileService(
+            SyncProfileRepository profileRepository,
+            SyncRunRepository runRepository,
+            ProfileMapper profileMapper,
+            SyncConfigValidator configValidator,
+            ConfigHasher configHasher,
+            ExecutionEligibilityService executionEligibilityService
+    ) {
         this.profileRepository = profileRepository;
         this.runRepository = runRepository;
         this.profileMapper = profileMapper;
         this.configValidator = configValidator;
+        this.configHasher = configHasher;
+        this.executionEligibilityService = executionEligibilityService;
         this.yamlMapper = new ObjectMapper(new YAMLFactory()).findAndRegisterModules();
     }
 
@@ -49,8 +62,7 @@ public class ProfileService {
 
     @Transactional
     public SyncProfileEntity create(ProfileForm form) {
-        SyncConfig config = profileMapper.toConfig(form);
-        validateForSave(config);
+        validateDraft(form);
         SyncProfileEntity entity = new SyncProfileEntity();
         profileMapper.updateEntity(entity, form);
         return profileRepository.save(entity);
@@ -58,12 +70,15 @@ public class ProfileService {
 
     @Transactional
     public SyncProfileEntity update(long id, ProfileForm form) {
-        SyncConfig config = profileMapper.toConfig(form);
-        validateForSave(config);
+        validateDraft(form);
         SyncProfileEntity entity = getProfile(id);
+        String previousConfigHash = configHasher.hash(profileMapper.toConfig(entity));
         profileMapper.updateEntity(entity, form);
-        entity.setLastSuccessfulDryRunHash(null);
-        entity.setLastSuccessfulDryRunAt(null);
+        String updatedConfigHash = configHasher.hash(profileMapper.toConfig(entity));
+        if (!previousConfigHash.equals(updatedConfigHash)) {
+            entity.setLastSuccessfulDryRunHash(null);
+            entity.setLastSuccessfulDryRunAt(null);
+        }
         return profileRepository.save(entity);
     }
 
@@ -92,6 +107,29 @@ public class ProfileService {
     }
 
     @Transactional(readOnly = true)
+    public ProfileStatus status(long id) {
+        SyncProfileEntity profile = getProfile(id);
+        SyncConfig config = profileMapper.toConfig(profile);
+        ValidationResult validation = configValidator.validate(config);
+        String configHash = configHasher.hash(config);
+        boolean dryRunCurrent = profile.getLastSuccessfulDryRunHash() != null
+                && profile.getLastSuccessfulDryRunHash().equals(configHash);
+        List<String> executionBlocks = validation.valid()
+                ? executionEligibilityService.explainExecutionBlocks(profile, configHash)
+                : List.of("Validation must pass before execution.");
+        return new ProfileStatus(
+                validation.valid(),
+                validation.errors(),
+                configHash,
+                profile.getLastSuccessfulDryRunHash(),
+                profile.getLastSuccessfulDryRunAt(),
+                dryRunCurrent,
+                validation.valid() && executionBlocks.isEmpty(),
+                executionBlocks
+        );
+    }
+
+    @Transactional(readOnly = true)
     public String exportYaml(long id) {
         try {
             return yamlMapper.writeValueAsString(profileMapper.toYaml(getProfile(id)));
@@ -115,10 +153,7 @@ public class ProfileService {
         return profileMapper.newForm();
     }
 
-    private void validateForSave(SyncConfig config) {
-        ValidationResult validation = configValidator.validate(config);
-        if (!validation.valid()) {
-            throw new ConfigValidationException(validation.errors());
-        }
+    private void validateDraft(ProfileForm form) {
+        profileMapper.toConfig(form);
     }
 }

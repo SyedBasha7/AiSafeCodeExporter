@@ -44,7 +44,7 @@ class SyncPlannerTest {
         SyncConfig config = config(source, target,
                 List.of("**/*.bin"),
                 List.of(),
-                List.of(new ReplacementRule("content", "Inneo", "Safe", true, false, true, Set.of(ApplyTarget.FILE_CONTENT))),
+                List.of(new ReplacementRule("content", "Demo", "Safe", true, false, true, Set.of(ApplyTarget.FILE_CONTENT))),
                 List.of());
 
         SyncPlan plan = planner().plan(config);
@@ -66,8 +66,8 @@ class SyncPlannerTest {
         Files.writeString(source.resolve("CustomerA").resolve("Service.java"), "class A {}", StandardCharsets.UTF_8);
         Files.writeString(source.resolve("CustomerB").resolve("Service.java"), "class B {}", StandardCharsets.UTF_8);
         List<ReplacementRule> rules = List.of(
-                new ReplacementRule("a", "CustomerA", "Inneo", true, false, true, Set.of(ApplyTarget.DIRECTORY_NAME)),
-                new ReplacementRule("b", "CustomerB", "Inneo", true, false, true, Set.of(ApplyTarget.DIRECTORY_NAME))
+                new ReplacementRule("a", "CustomerA", "Demo", true, false, true, Set.of(ApplyTarget.DIRECTORY_NAME)),
+                new ReplacementRule("b", "CustomerB", "Demo", true, false, true, Set.of(ApplyTarget.DIRECTORY_NAME))
         );
 
         SyncPlan plan = planner().plan(config(source, target, List.of("**/*.java"), List.of(), rules, List.of()));
@@ -82,10 +82,10 @@ class SyncPlannerTest {
         Files.createDirectories(tempDir);
         Path source = tempDir.resolve("source");
         Path target = tempDir.resolve("target");
-        Files.createDirectories(source.resolve("InneoDirectory"));
-        Files.writeString(source.resolve("InneoFile.java"), "class InneoFile {}", StandardCharsets.UTF_8);
+        Files.createDirectories(source.resolve("DemoDirectory"));
+        Files.writeString(source.resolve("DemoFile.java"), "class DemoFile {}", StandardCharsets.UTF_8);
         List<ReplacementRule> rules = List.of(
-                new ReplacementRule("file-to-dir", "InneoFile.java", "InneoDirectory", true, false, true, Set.of(ApplyTarget.FILE_NAME))
+                new ReplacementRule("file-to-dir", "DemoFile.java", "DemoDirectory", true, false, true, Set.of(ApplyTarget.FILE_NAME))
         );
 
         SyncPlan plan = planner().plan(config(source, target, List.of("**/*.java"), List.of(), rules, List.of()));
@@ -102,10 +102,10 @@ class SyncPlannerTest {
         Path source = tempDir.resolve("source");
         Path target = tempDir.resolve("target");
         Files.createDirectories(source);
-        Files.writeString(source.resolve("App.java"), "class App { String tenant = \"InneoTenant\"; }", StandardCharsets.UTF_8);
+        Files.writeString(source.resolve("App.java"), "class App { String tenant = \"DemoTenant\"; }", StandardCharsets.UTF_8);
 
         SyncPlan plan = planner().plan(config(source, target, List.of("**/*.java"), List.of(), List.of(),
-                List.of(new SensitiveTermRule("tenant", List.of("InneoTenant"), true, true))));
+                List.of(new SensitiveTermRule("tenant", List.of("DemoTenant"), true, true))));
 
         assertThat(plan.executable()).isFalse();
         assertThat(plan.operations()).anyMatch(operation -> operation.operationType() == OperationType.LEAK_DETECTED
@@ -119,10 +119,10 @@ class SyncPlannerTest {
         Path source = tempDir.resolve("source");
         Path target = tempDir.resolve("target");
         Files.createDirectories(source);
-        Files.writeString(source.resolve("InneoTenant.java"), "class InneoTenant {}", StandardCharsets.UTF_8);
+        Files.writeString(source.resolve("DemoTenant.java"), "class DemoTenant {}", StandardCharsets.UTF_8);
 
         SyncPlan plan = planner().plan(config(source, target, List.of("**/*.java"), List.of(), List.of(),
-                List.of(new SensitiveTermRule("tenant", List.of("InneoTenant"), true, true))));
+                List.of(new SensitiveTermRule("tenant", List.of("DemoTenant"), true, true))));
 
         assertThat(plan.executable()).isFalse();
         assertThat(plan.operations()).anyMatch(operation -> operation.operationType() == OperationType.LEAK_DETECTED

@@ -9,4 +9,5 @@ public class AiSafeCodeSyncApplication {
     public static void main(String[] args) {
         SpringApplication.run(AiSafeCodeSyncApplication.class, args);
     }
+    
 }

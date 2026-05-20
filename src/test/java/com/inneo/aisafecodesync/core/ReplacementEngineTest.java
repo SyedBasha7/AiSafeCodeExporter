@@ -17,21 +17,21 @@ class ReplacementEngineTest {
 
     @Test
     void plainTextReplacementCaseSensitive() {
-        ReplacementRule rule = new ReplacementRule("customer", "InneoTenant", "inneo-tenant", true, false, true, Set.of(ApplyTarget.FILE_CONTENT));
+        ReplacementRule rule = new ReplacementRule("customer", "DemoTenant", "demo-tenant", true, false, true, Set.of(ApplyTarget.FILE_CONTENT));
 
-        ReplacementOutcome outcome = replacementEngine.replace("InneoTenant inneotenant InneoTenant", List.of(rule), ApplyTarget.FILE_CONTENT);
+        ReplacementOutcome outcome = replacementEngine.replace("DemoTenant demotenant DemoTenant", List.of(rule), ApplyTarget.FILE_CONTENT);
 
-        assertThat(outcome.value()).isEqualTo("inneo-tenant inneotenant inneo-tenant");
+        assertThat(outcome.value()).isEqualTo("demo-tenant demotenant demo-tenant");
         assertThat(outcome.counts()).containsEntry("customer", 2);
     }
 
     @Test
     void plainTextReplacementCaseInsensitive() {
-        ReplacementRule rule = new ReplacementRule("tenant", "InneoTenant", "inneo-tenant", false, false, true, Set.of(ApplyTarget.FILE_CONTENT));
+        ReplacementRule rule = new ReplacementRule("tenant", "DemoTenant", "demo-tenant", false, false, true, Set.of(ApplyTarget.FILE_CONTENT));
 
-        ReplacementOutcome outcome = replacementEngine.replace("InneoTenant inneotenant INNEOTENANT", List.of(rule), ApplyTarget.FILE_CONTENT);
+        ReplacementOutcome outcome = replacementEngine.replace("DemoTenant demotenant DEMOTENANT", List.of(rule), ApplyTarget.FILE_CONTENT);
 
-        assertThat(outcome.value()).isEqualTo("inneo-tenant inneo-tenant inneo-tenant");
+        assertThat(outcome.value()).isEqualTo("demo-tenant demo-tenant demo-tenant");
         assertThat(outcome.counts()).containsEntry("tenant", 3);
     }
 

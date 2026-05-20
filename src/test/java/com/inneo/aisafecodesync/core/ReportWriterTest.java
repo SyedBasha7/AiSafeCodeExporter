@@ -35,14 +35,14 @@ class ReportWriterTest {
         Path source = tempDir.resolve("private-source");
         Path target = tempDir.resolve("private-target");
         SyncConfig config = new SyncConfig(
-                "InneoTenant export",
+                "DemoTenant export",
                 ProfileType.AI_SAFE_EXPORT,
                 source,
                 target,
                 List.of("**/*.java"),
                 List.of(),
-                List.of(new ReplacementRule("project", "InneoSecretProject", "inneo-project", true, false, true, Set.of(ApplyTarget.FILE_CONTENT))),
-                List.of(new SensitiveTermRule("tenant", List.of("InneoTenant"), true, true)),
+                List.of(new ReplacementRule("project", "DemoSecretProject", "demo-project", true, false, true, Set.of(ApplyTarget.FILE_CONTENT))),
+                List.of(new SensitiveTermRule("tenant", List.of("DemoTenant"), true, true)),
                 false,
                 StandardCharsets.UTF_8
         );
@@ -53,8 +53,8 @@ class ReportWriterTest {
 
         assertThat(json).doesNotContain(source.toAbsolutePath().normalize().toString());
         assertThat(json).doesNotContain(target.toAbsolutePath().normalize().toString());
-        assertThat(json).doesNotContain("InneoSecretProject");
-        assertThat(json).doesNotContain("InneoTenant");
+        assertThat(json).doesNotContain("DemoSecretProject");
+        assertThat(json).doesNotContain("DemoTenant");
         assertThat(json).contains("${SOURCE_ROOT}");
         assertThat(json).contains("${TARGET_ROOT}");
         assertThat(json).contains("[REDACTED]");
@@ -86,16 +86,16 @@ class ReportWriterTest {
                 source.resolve("src/App.java").toString(),
                 target.resolve("src/App.java").toString(),
                 "src/App.java",
-                "InneoTenant/App.java",
+                "DemoTenant/App.java",
                 OperationType.LEAK_DETECTED,
                 OperationStatus.BLOCKED,
                 Map.of("project", 1),
                 Map.of("project", 2),
                 Set.of("project", "tenant"),
-                List.of(new LeakFinding("tenant", "PATH", "InneoTenant/App.java", 1, "Sensitive InneoTenant remains")),
-                "Do not expose InneoSecretProject"
+                List.of(new LeakFinding("tenant", "PATH", "DemoTenant/App.java", 1, "Sensitive DemoTenant remains")),
+                "Do not expose DemoSecretProject"
         );
-        return new SyncReport(42L, "InneoTenant export", ProfileType.AI_SAFE_EXPORT, true,
+        return new SyncReport(42L, "DemoTenant export", ProfileType.AI_SAFE_EXPORT, true,
                 Instant.parse("2026-01-01T00:00:00Z"), Instant.parse("2026-01-01T00:00:01Z"),
                 "FAILED", source.toString(), target.toString(), "abc", List.of(entry));
     }

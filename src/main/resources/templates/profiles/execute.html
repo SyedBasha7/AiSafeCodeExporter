@@ -18,13 +18,44 @@
             <dt class="col-sm-3">Source</dt><dd class="col-sm-9 path-cell" th:text="${profile.sourcePath}">Source</dd>
             <dt class="col-sm-3">Target</dt><dd class="col-sm-9 path-cell" th:text="${profile.targetPath}">Target</dd>
             <dt class="col-sm-3">Config hash</dt><dd class="col-sm-9 code-textarea" th:text="${configHash}">hash</dd>
+            <dt class="col-sm-3">Last dry-run</dt><dd class="col-sm-9" th:text="${profileStatus.lastSuccessfulDryRunAt() != null ? profileStatus.lastSuccessfulDryRunAt() : 'None'}">None</dd>
+            <dt class="col-sm-3">Validation</dt><dd class="col-sm-9" th:text="${profileStatus.validationPassed() ? 'Passed' : 'Blocked'}">Passed</dd>
+            <dt class="col-sm-3">Dry-run state</dt><dd class="col-sm-9" th:text="${profileStatus.dryRunCurrent() ? 'Current' : 'Required'}">Current</dd>
         </dl>
+    </div>
+    <div class="summary-card p-3 mb-3" th:if="${!profileStatus.validationPassed()}">
+        <h2 class="h5">Validation Blocks</h2>
+        <ul class="mb-0">
+            <li th:each="error : ${profileStatus.validationErrors()}" th:text="${error}">Validation issue</li>
+        </ul>
     </div>
     <div class="alert alert-warning" th:if="${!#lists.isEmpty(blocks)}">
         <div th:each="block : ${blocks}" th:text="${block}">Blocked</div>
     </div>
-    <form method="post" th:action="@{/profiles/{id}/execute(id=${profile.id})}">
-        <button class="btn btn-danger" type="submit" th:disabled="${!#lists.isEmpty(blocks)}">Run actual execution</button>
+
+    <div class="summary-card p-3 mb-3" th:if="${!profileStatus.executionReady()}">
+        <h2 class="h5">Next step</h2>
+        <p class="text-secondary mb-3" th:if="${!profileStatus.validationPassed()}">
+            Fix the validation blocks before running dry-run or execution.
+        </p>
+        <p class="text-secondary mb-3" th:if="${profileStatus.validationPassed()}">
+            Run dry-run for this exact profile configuration, then review the private report before actual execution.
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-secondary" th:href="@{/profiles/{id}/validate(id=${profile.id})}">Validate</a>
+            <form method="post" th:if="${profileStatus.validationPassed()}" th:action="@{/profiles/{id}/dry-run(id=${profile.id})}">
+                <button class="btn btn-success" type="submit">Run dry-run now</button>
+            </form>
+            <a class="btn btn-outline-primary" th:href="@{/profiles/{id}/edit(id=${profile.id})}">Edit profile</a>
+        </div>
+    </div>
+
+    <form method="post" th:if="${profileStatus.executionReady()}" th:action="@{/profiles/{id}/execute(id=${profile.id})}">
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="executionAcknowledged" name="executionAcknowledged" value="true" required>
+            <label class="form-check-label" for="executionAcknowledged">I understand files will be written to the target folder.</label>
+        </div>
+        <button class="btn btn-danger" type="submit">Run actual execution</button>
     </form>
 </main>
 </body>

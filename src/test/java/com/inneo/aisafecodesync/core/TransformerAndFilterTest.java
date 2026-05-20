@@ -24,26 +24,26 @@ class TransformerAndFilterTest {
     @Test
     void pathTransformationAppliesDirectoryAndFileRules() {
         List<ReplacementRule> rules = List.of(
-                new ReplacementRule("dir", "CustomerPortal", "inneo-app", true, false, true, Set.of(ApplyTarget.DIRECTORY_NAME)),
-                new ReplacementRule("file", "Tenant", "Inneo", true, false, true, Set.of(ApplyTarget.FILE_NAME))
+                new ReplacementRule("dir", "CustomerPortal", "demo-app", true, false, true, Set.of(ApplyTarget.DIRECTORY_NAME)),
+                new ReplacementRule("file", "Tenant", "Demo", true, false, true, Set.of(ApplyTarget.FILE_NAME))
         );
         PathTransformer transformer = new PathTransformer(replacementEngine);
 
         PathTransformer.PathTransformResult result = transformer.transformRelativePath(Path.of("CustomerPortal", "TenantService.java"), false, rules);
 
-        assertThat(result.path().toString().replace('\\', '/')).isEqualTo("inneo-app/InneoService.java");
+        assertThat(result.path().toString().replace('\\', '/')).isEqualTo("demo-app/DemoService.java");
         assertThat(result.counts()).containsEntry("dir", 1).containsEntry("file", 1);
     }
 
     @Test
     void contentTransformationCountsContentRulesOnly() {
-        ReplacementRule contentRule = new ReplacementRule("content", "InneoTenant", "inneo-tenant", true, false, true, Set.of(ApplyTarget.FILE_CONTENT));
-        ReplacementRule pathOnlyRule = new ReplacementRule("path", "InneoTenant", "ignored", true, false, true, Set.of(ApplyTarget.FILE_NAME));
+        ReplacementRule contentRule = new ReplacementRule("content", "DemoTenant", "demo-tenant", true, false, true, Set.of(ApplyTarget.FILE_CONTENT));
+        ReplacementRule pathOnlyRule = new ReplacementRule("path", "DemoTenant", "ignored", true, false, true, Set.of(ApplyTarget.FILE_NAME));
         ContentTransformer transformer = new ContentTransformer(replacementEngine);
 
-        var result = transformer.transform("InneoTenant owns InneoTenant", List.of(contentRule, pathOnlyRule));
+        var result = transformer.transform("DemoTenant owns DemoTenant", List.of(contentRule, pathOnlyRule));
 
-        assertThat(result.value()).isEqualTo("inneo-tenant owns inneo-tenant");
+        assertThat(result.value()).isEqualTo("demo-tenant owns demo-tenant");
         assertThat(result.counts()).containsOnlyKeys("content");
         assertThat(result.counts()).containsEntry("content", 2);
     }

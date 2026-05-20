@@ -27,14 +27,14 @@ public class ProfileMapper {
 
     public ProfileForm newForm() {
         ProfileForm form = new ProfileForm();
-        form.setName("Inneo AI-safe export");
+        form.setName("AI-safe export profile");
         form.setProfileType(ProfileType.AI_SAFE_EXPORT);
         form.setIncludePatternsText(joinLines(SyncConfig.defaultIncludes()));
         form.setExcludePatternsText(joinLines(SyncConfig.defaultExcludes()));
         form.setReplacementRulesText("# id|search|replacement|caseSensitive|regex|enabled|applyTargets\n"
-                + "inneo-project|InneoCustomerPortal|inneo-app|true|false|true|DIRECTORY_NAME,FILE_NAME,FILE_CONTENT");
+                + "project-name|DemoCustomerPortal|demo-app|true|false|true|DIRECTORY_NAME,FILE_NAME,FILE_CONTENT");
         form.setSensitiveTermRulesText("# id|caseSensitive|enabled|comma-separated-values\n"
-                + "inneo-sensitive|true|true|InneoCustomerPortal,InneoTenant");
+                + "demo-sensitive|true|true|DemoCustomerPortal,DemoTenant");
         return form;
     }
 

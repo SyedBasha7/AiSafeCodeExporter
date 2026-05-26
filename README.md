@@ -47,6 +47,20 @@ server:
 mvn clean package
 ```
 
+The executable jar is written to:
+
+```text
+target\AiSafeCodeExporter-0.1.0-SNAPSHOT.jar
+```
+
+Run the packaged app with:
+
+```powershell
+java -jar target\AiSafeCodeExporter-0.1.0-SNAPSHOT.jar
+```
+
+Production startup uses the idempotent `schema.sql` initializer for the local H2 database. Hibernate DDL mutation is disabled in normal runs, so repeated starts should not log table-or-constraint-already-exists warnings.
+
 ## Test
 
 ```powershell

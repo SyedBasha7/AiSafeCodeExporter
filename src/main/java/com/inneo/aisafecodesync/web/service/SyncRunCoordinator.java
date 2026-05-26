@@ -110,7 +110,7 @@ public class SyncRunCoordinator {
                 SyncRunEntity blockedRun = persistRun(profile, config, false, started, clock.instant(), "BLOCKED", plan.configHash(), plan.operations());
                 return blockedRun.getId();
             }
-            List<SyncOperation> executedOperations = syncExecutor.execute(plan);
+            List<SyncOperation> executedOperations = finalizeActualExecutionStatuses(syncExecutor.execute(plan));
             String status = executedOperations.stream().anyMatch(operation -> operation.operationStatus() == OperationStatus.FAILED)
                     ? "COMPLETED_WITH_ERRORS"
                     : "SUCCESS";
@@ -119,6 +119,14 @@ public class SyncRunCoordinator {
         } finally {
             runLock.unlock();
         }
+    }
+
+    private List<SyncOperation> finalizeActualExecutionStatuses(List<SyncOperation> operations) {
+        return operations.stream()
+                .map(operation -> operation.operationStatus() == OperationStatus.PLANNED
+                        ? operation.withStatus(OperationStatus.FAILED, "Execution finished without resolving this planned operation.")
+                        : operation)
+                .toList();
     }
 
     private SyncRunEntity persistRun(

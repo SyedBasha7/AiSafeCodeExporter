@@ -1,2 +1,5 @@
 org.springframework.boot.env.EnvironmentPostProcessor=\
 com.inneo.aisafecodesync.config.AppDataDirectoryEnvironmentPostProcessor
+
+org.springframework.boot.diagnostics.FailureAnalyzer=\
+com.inneo.aisafecodesync.config.StartupPreflightFailureAnalyzer

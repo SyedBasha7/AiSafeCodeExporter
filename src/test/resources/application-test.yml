@@ -1,3 +1,6 @@
+server:
+  port: 0
+
 spring:
   datasource:
     url: jdbc:h2:mem:aisafecodesync-test;MODE=PostgreSQL;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1
@@ -8,6 +11,9 @@ spring:
     hibernate:
       ddl-auto: create-drop
     open-in-view: false
+  sql:
+    init:
+      mode: never
 
 logging:
   level:

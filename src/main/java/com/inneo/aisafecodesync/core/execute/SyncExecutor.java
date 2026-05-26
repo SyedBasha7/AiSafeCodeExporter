@@ -33,10 +33,13 @@ public class SyncExecutor {
     }
 
     private SyncOperation executeOperation(SyncOperation operation, Path targetRoot) throws IOException {
-        if (operation.operationStatus() == OperationStatus.SKIPPED
-                || operation.operationType() == OperationType.TRANSFORM_PATH
-                || operation.operationType() == OperationType.TRANSFORM_CONTENT) {
+        if (operation.operationStatus() == OperationStatus.SKIPPED || operation.operationStatus() == OperationStatus.BLOCKED) {
             return operation.withStatus(operation.operationStatus(), operation.errorMessage());
+        }
+        if (operation.operationType() == OperationType.TRANSFORM_PATH
+                || operation.operationType() == OperationType.TRANSFORM_CONTENT
+                || operation.operationType() == OperationType.LEAK_DETECTED) {
+            return operation.withStatus(OperationStatus.SUCCESS, null);
         }
         if (operation.operationType() == OperationType.CREATE_DIRECTORY) {
             requireInsideTargetRoot(operation.targetAbsolutePath(), targetRoot);
@@ -56,7 +59,7 @@ public class SyncExecutor {
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
             return operation.withStatus(OperationStatus.SUCCESS, null);
         }
-        return operation;
+        throw new IOException("No execution action is defined for operation type " + operation.operationType() + ".");
     }
 
     private void requireInsideTargetRoot(Path targetPath, Path targetRoot) throws IOException {

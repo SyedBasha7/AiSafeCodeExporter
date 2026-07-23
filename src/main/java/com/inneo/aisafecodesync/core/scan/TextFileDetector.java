@@ -12,6 +12,7 @@ public class TextFileDetector {
     private static final Set<String> TEXT_EXTENSIONS = Set.of(
             ".java",
             ".xml",
+            ".jsp",
             ".properties",
             ".yml",
             ".yaml",

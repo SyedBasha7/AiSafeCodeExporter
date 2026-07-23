@@ -4,6 +4,7 @@ sourcePath: C:\demo\source\DemoCustomerPortal
 targetPath: C:\demo\ai-safe-export\demo-customer-portal
 includePatterns:
   - "**/*.java"
+  - "**/*.jsp"
   - "**/*.xml"
   - "**/*.properties"
   - "**/*.yml"

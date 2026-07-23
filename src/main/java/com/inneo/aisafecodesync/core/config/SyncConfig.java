@@ -69,6 +69,7 @@ public record SyncConfig(
                 "**/*.html",
                 "**/*.css",
                 "**/*.js",
+                "**/*.jsp",
                 "**/*.ts",
                 "**/*.gradle",
                 "**/pom.xml",
